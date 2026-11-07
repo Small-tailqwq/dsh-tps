@@ -2,7 +2,7 @@
 
 A live TPS (tokens per second) reading at the end of the running status row in DSH Web.
 
-[English](README.en.md) | [简体中文](README.md)
+**English** | [简体中文](README.md)
 
 ![Demo](assets/dshtpsdemo.gif)
 
