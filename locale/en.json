@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "TPS live rate",
+    "description": "Shows the live tokens-per-second rate at the end of the running status row. The rate is estimated from the streamed output and the digits roll like an odometer; the badge disappears with the row when the turn ends.",
+    "detail": "docs/DETAIL.md"
+  }
+}

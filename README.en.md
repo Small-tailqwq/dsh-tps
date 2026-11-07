@@ -1,6 +1,6 @@
 # dsh-tps
 
-A live TPS (tokens per second) badge beside the “Deep diving…” status in DSH Web.
+A live TPS (tokens per second) reading at the end of the running status row in DSH Web.
 
 中文: [README.md](README.md)
 
@@ -23,7 +23,7 @@ dsh web
 Reopen the page and start a task. Once streamed output arrives, the badge appears:
 
 ```text
-Deep diving… 24s  TPS 132
+Deep diving for 24s ···  24.37
 ```
 
 GitHub installs build the plugin automatically. If pnpm blocks build scripts, configure the Web profile's `allowBuilds` as prompted and retry.
@@ -33,7 +33,7 @@ GitHub installs build the plugin automatically. If pnpm blocks build scripts, co
 For a prebuilt `.tgz`, substitute its actual path:
 
 ```sh
-dsh plugin --profile web add './dsh-tps-0.3.0-rc1-dom.tgz'
+dsh plugin --profile web add './dsh-tps.tgz'
 ```
 
 Prebuilt packages contain ready-to-load runtime code and require no Harness checkout or local compilation.
@@ -41,10 +41,15 @@ Prebuilt packages contain ready-to-load runtime code and require no Harness chec
 ## Features
 
 - **Live rate:** a rolling 5-second window estimates streamed output from the UTF-8 bytes of text and reasoning blocks.
+- **Digit reels:** every digit is a 0–9 reel that rolls up or down with the value and wraps through the reel (9→0, 0→9) instead of jumping.
 - **Natural visibility:** appears with the running status row and disappears with it when the turn ends; returns to `00.00` after roughly 1.5 seconds without output.
 - **Hover fade:** fades after a 2-second hover, becomes click-through, and returns 3 seconds after the pointer moves away.
 - **Language-independent mounting:** uses semantic DOM structure, without matching translated labels or CSS hashes.
 - **Front-end only:** reads DSH session snapshots without extra network requests. The native stats line continues to provide averages, first-token latency, and total usage.
+
+## In the plugin UI
+
+After installation, Plugin Manager and Settings show the title “TPS live rate”, the description and the icon; the detail page includes a reading preview. Chinese UI shows “TPS 实时速率”.
 
 ## Installed but not visible
 

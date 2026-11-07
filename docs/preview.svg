@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300">
+  <defs>
+    <clipPath id="reel-window"><rect x="80" y="150" width="64" height="118" rx="14"/></clipPath>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="640" height="300" rx="20" fill="#F2F6FC"/>
+
+  <!-- Running status row with the badge seated at its end -->
+  <rect x="40" y="50" width="560" height="66" rx="16" fill="#FFFFFF" stroke="#DCE6F3" stroke-width="2"/>
+  <circle cx="72" cy="83" r="8" fill="#4C8DFF"/>
+  <rect x="92" y="76" width="150" height="7" rx="3.5" fill="#C8D6E9"/>
+  <rect x="92" y="88" width="104" height="6" rx="3" fill="#E0E8F3"/>
+  <circle cx="262" cy="91" r="2.5" fill="#C8D6E9"/>
+  <circle cx="272" cy="91" r="2.5" fill="#C8D6E9"/>
+  <circle cx="282" cy="91" r="2.5" fill="#C8D6E9"/>
+  <rect x="470" y="62" width="114" height="42" rx="10" fill="#123A6B"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"><path d="M497 73L503 73"/><path d="M505 75L505 81"/><path d="M497 83L503 83"/><path d="M495 85L495 91"/><path d="M497 93L503 93"/></g><g fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"><path d="M510 75L510 81"/><path d="M512 83L518 83"/><path d="M520 75L520 81"/><path d="M520 85L520 91"/></g><circle cx="526" cy="84" r="1.6" fill="#FFFFFF"/><g fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"><path d="M534 73L540 73"/><path d="M542 75L542 81"/><path d="M534 83L540 83"/><path d="M542 85L542 91"/><path d="M534 93L540 93"/></g><g fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"><path d="M549 73L555 73"/><path d="M557 75L557 81"/><path d="M557 85L557 91"/></g>
+
+  <!-- Reel close-up: the digit rolls between faces -->
+  <rect x="80" y="150" width="64" height="118" rx="14" fill="#FFFFFF" stroke="#CFDCF0" stroke-width="2"/>
+  <g clip-path="url(#reel-window)">
+    <g opacity="0.18"><g fill="none" stroke="#123A6B" stroke-width="3" stroke-linecap="round"><path d="M106.8 153.6L116.4 153.6"/><path d="M103.6 156.8L103.6 166.4"/><path d="M106.8 169.6L116.4 169.6"/><path d="M103.6 172.8L103.6 182.4"/><path d="M119.6 172.8L119.6 182.4"/><path d="M106.8 185.6L116.4 185.6"/></g></g>
+    <g fill="none" stroke="#123A6B" stroke-width="3.2" stroke-linecap="round"><path d="M106.8 192.6L116.4 192.6"/><path d="M119.6 195.8L119.6 205.4"/><path d="M119.6 211.8L119.6 221.4"/></g>
+    <g opacity="0.18"><g fill="none" stroke="#123A6B" stroke-width="3" stroke-linecap="round"><path d="M106.8 231.6L116.4 231.6"/><path d="M119.6 234.8L119.6 244.4"/><path d="M119.6 250.8L119.6 260.4"/><path d="M106.8 263.6L116.4 263.6"/><path d="M103.6 250.8L103.6 260.4"/><path d="M103.6 234.8L103.6 244.4"/><path d="M106.8 247.6L116.4 247.6"/></g></g>
+  </g>
+
+  <!-- Roll direction -->
+  <path d="M188 184v64" fill="none" stroke="#9DB9E8" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M179 193l9-9 9 9" fill="none" stroke="#9DB9E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M179 239l9 9 9-9" fill="none" stroke="#9DB9E8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Speed lines echo the icon -->
+  <path d="M248 186h52M248 209h72M248 232h40" fill="none" stroke="#7BA6E8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="356" cy="209" r="6" fill="#4C8DFF"/>
+
+  <!-- Reading scale: the stable integer columns before the fast decimals -->
+  <path d="M392 176v88" fill="none" stroke="#DCE6F3" stroke-width="2" stroke-linecap="round"/>
+  <path d="M410 176v88M428 176v88M446 176v88" fill="none" stroke="#E8EEF7" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="410" cy="200" r="5" fill="#4C8DFF"/>
+  <circle cx="428" cy="220" r="5" fill="#7BA6E8"/>
+  <circle cx="446" cy="236" r="5" fill="#B9CDE9"/>
+</svg>

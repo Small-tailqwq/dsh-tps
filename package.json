@@ -3,6 +3,7 @@
   "version": "0.3.0",
   "description": "Running-turn TPS badge for DSH Web: live tokens-per-second inside the Deep diving status row",
   "private": true,
+  "icon": "./icon.svg",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -15,6 +16,8 @@
       "types": "./lib/types/client/index.d.ts",
       "default": "./lib/client.js"
     },
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
     "./package.json": "./package.json"
   },
   "dsh": {
@@ -75,6 +78,9 @@
     "lib/index.js",
     "lib/client.js",
     "lib/types/**/*.d.ts",
+    "locale",
+    "docs",
+    "icon.svg",
     "src"
   ]
 }

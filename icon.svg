@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <!-- Odometer window: the badge's reel frame -->
+  <rect x="5.5" y="8" width="17" height="20" rx="4" fill="none" stroke="#3B76D9" stroke-width="2.4"/>
+  <!-- The digit on the reel -->
+  <ellipse cx="14" cy="18" rx="3.7" ry="4.4" fill="none" stroke="#3B76D9" stroke-width="2.1"/>
+  <!-- Roll direction marks above and below the face -->
+  <path d="M11.2 11.6h5.6M11.2 24.4h5.6" fill="none" stroke="#9DB9E8" stroke-width="1.7" stroke-linecap="round"/>
+  <!-- Speed lines trailing the window -->
+  <path d="M26 14.6h4M26 18h5.4M26 21.4h3.4" fill="none" stroke="#7BA6E8" stroke-width="2" stroke-linecap="round"/>
+</svg>

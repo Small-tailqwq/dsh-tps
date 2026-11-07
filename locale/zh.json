@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "TPS 实时速率",
+    "description": "在本轮运行状态行末尾显示实时 TPS。数值按流式输出估算，数字以 0–9 滚轮滚动；任务结束时徽标随状态行一起消失。",
+    "detail": "docs/DETAIL.zh.md"
+  }
+}
