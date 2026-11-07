@@ -16,16 +16,7 @@
       "path": "../deepseek-harness/packages/client/locale"
     },
     {
-      "path": "../deepseek-harness/packages/client/ui-chat"
-    },
-    {
       "path": "../deepseek-harness/packages/client/ui-conversation"
-    },
-    {
-      "path": "../deepseek-harness/packages/client/ui-renderer"
-    },
-    {
-      "path": "../deepseek-harness/packages/client/ui-session"
     },
     {
       "path": "../deepseek-harness/packages/client/ui-slots"

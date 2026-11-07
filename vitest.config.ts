@@ -2,7 +2,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
 
 /**
- * Vitest resolution facade: the local test project and the sibling rc.1
+ * Vitest resolution facade: the local test project and the sibling
  * harness base jointly resolve repo-local @deepseek-ai packages from source.
  */
 export default defineConfig({

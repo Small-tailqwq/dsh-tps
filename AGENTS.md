@@ -11,7 +11,7 @@ Development section for the sibling-layout contract).
   Typecheck, build, and tests require the sibling checkout at
   `../deepseek-harness`.
 - **Consumer builds never touch the sibling.** The `prepare` script runs
-  `tsdown --config tsdown.prepare.config.ts` — a type-unchecked src→lib
+  `tsdown` with the shared `tsdown.config.ts` — a type-unchecked src→lib
   transpile under the self-contained `tsconfig.prepare.json` — so a machine
   without the sibling checkout can still install and build this package
   (pnpm ≥ 10 needs the `allowBuilds` key in `pnpm-workspace.yaml`).

@@ -1,14 +1,14 @@
 /**
- * Development build config: `tsc -b` has already emitted `lib/types` through
- * the sibling rc.1 harness project graph; tsdown bundles the node half
- * (`lib/index.js`) and the browser client bundle (`lib/client.js`) straight
- * from src, with CSS Modules compiled by lightningcss and inlined as a
+ * Single build config for both the development build (`pnpm run build`, after
+ * `tsc -b` emits `lib/types`) and the consumer `prepare` build. tsdown bundles
+ * the node half (`lib/index.js`) and the browser client bundle (`lib/client.js`)
+ * straight from src, with CSS Modules compiled by lightningcss and inlined as a
  * `<style data-plugin>` tag — the same artifact contract as the in-repo
- * dsh-client-* packages.
+ * dsh-client-* packages. Both paths share the self-contained
+ * `tsconfig.prepare.json`, so they emit identical runtime code.
  */
 import { defineConfig } from 'tsdown'
-import { cssModulesPlugin } from './build/css-modules-plugin.ts'
-import { CLIENT_EXTERNALS, CLIENT_ID } from './build/shared.ts'
+import { cssModulesPlugin, CLIENT_EXTERNALS, CLIENT_ID } from './build.ts'
 
 export default defineConfig([
   {
@@ -20,6 +20,7 @@ export default defineConfig([
     fixedExtension: false,
     clean: false,
     dts: false,
+    tsconfig: 'tsconfig.prepare.json',
   },
   {
     entry: { client: 'src/client/index.ts' },
@@ -36,6 +37,7 @@ export default defineConfig([
     // here or in CLIENT_EXTERNALS — never plain-external.
     deps: { alwaysBundle: ['clsx'], neverBundle: CLIENT_EXTERNALS },
     plugins: [cssModulesPlugin(CLIENT_ID)],
+    tsconfig: 'tsconfig.prepare.json',
     outputOptions: {
       entryFileNames: 'client.js',
       banner: `window.__ModuleLoader__.load({ id: ${JSON.stringify(CLIENT_ID)}, factory: (require) => {`,

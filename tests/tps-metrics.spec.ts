@@ -1,9 +1,10 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 import {
   LIVE_MIN_DURATION_MS, LIVE_STALE_MS, LIVE_WINDOW_MS,
   estimateDeltaTokens, estimatePartialTokens, formatRate,
   liveRate, pushSample,
-} from '../src/client/tps-metrics.ts'
+} from '../src/client/TpsOverlay.tsx'
 
 describe('estimateDeltaTokens', () => {
   it('applies the oc-tps bytes/5 approximation with a one-token floor', () => {
@@ -82,9 +83,10 @@ describe('liveRate', () => {
 })
 
 describe('formatRate', () => {
-  it('uses the oc-tps precision ladder: integer ≥100, one decimal ≥10, two below', () => {
-    expect(formatRate(123.4)).toBe('123')
-    expect(formatRate(12.34)).toBe('12.3')
-    expect(formatRate(1.234)).toBe('1.23')
+  it('keeps the fixed nn.nn shape with a zero-padded integer part', () => {
+    expect(formatRate(123.4)).toBe('123.40')
+    expect(formatRate(12.34)).toBe('12.34')
+    expect(formatRate(1.234)).toBe('01.23')
+    expect(formatRate(0)).toBe('00.00')
   })
 })

@@ -9,17 +9,14 @@
  * re-enter required). Component-level rendering covers the direct props
  * contract. The node half is exercised over the same suite.
  */
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import type { SessionSnapshot } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { ChatSnapshot, PartialAssistant } from '@deepseek-ai/dsh-client-ui-chat/client'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import { SlotCore } from '@deepseek-ai/dsh-client-ui-slots'
-import { TpsMount } from '../src/client/TpsMount.tsx'
-import { apply, inject } from '../src/client/index.ts'
-import { sharedEstimator } from '../src/client/tokenizer/estimator.ts'
-import { TpsOverlay, pointInRect } from '../src/client/TpsOverlay.tsx'
-import { zh } from '../src/client/locales.ts'
+import { apply, inject, zh } from '../src/client/index.ts'
+import { TpsMount, TpsOverlay, pointInRect } from '../src/client/TpsOverlay.tsx'
 import css from '../src/client/TpsOverlay.module.css'
 import { apply as nodeApply } from '../src/index.ts'
 
@@ -37,7 +34,7 @@ interface TpsSnapshot {
   partial: PartialAssistant | null
 }
 
-/** A quiescent rc.1 Session/Chat projection (open window, no traffic). */
+/** A quiescent Session/Chat projection (open window, no traffic). */
 function conversationSnapshot(): TpsSnapshot {
   return { running: false, partial: null }
 }
@@ -51,7 +48,7 @@ function runningSnapshot(): TpsSnapshot {
   }
 }
 
-/** Selector-faithful Session stub over the rc.1 lifecycle owner. */
+/** Selector-faithful Session stub over the lifecycle owner. */
 function useSessionOf(snapshot: () => TpsSnapshot): SnapshotSelectorHook<SessionSnapshot> {
   return selector => selector({
     sessionId: sid,
@@ -72,7 +69,7 @@ function useSessionOf(snapshot: () => TpsSnapshot): SnapshotSelectorHook<Session
   })
 }
 
-/** Selector-faithful Chat stub over the rc.1 target-owned partial. */
+/** Selector-faithful Chat stub over the target-owned partial. */
 function useChatOf(snapshot: () => TpsSnapshot): SnapshotSelectorHook<ChatSnapshot> {
   return selector => selector({
     order: EMPTY_LIST,
@@ -107,6 +104,11 @@ function makeTranslate(dict: Record<string, string>): (key: string, params?: Rec
 
 const t = makeTranslate(zh)
 
+/** The badge's accessible reading — odometer cells also hold outgoing glyphs. */
+function badgeLabel(container: HTMLElement): string | null {
+  return container.querySelector('[data-tps-badge]')?.getAttribute('aria-label') ?? null
+}
+
 describe('pointInRect', () => {
   it('includes points on the edges and excludes outside points', () => {
     const rect = { left: 10, top: 20, right: 110, bottom: 50 }
@@ -135,27 +137,28 @@ describe('ui-tps plugin registration', () => {
     const snapshot = runningSnapshot()
     const view = render(<div data-conversation-scroll="">
       <div data-chat-flow="">
-        <article><div role="status" aria-live="polite">nested status</div></article>
-        <div role="status" aria-live="polite">考え中…</div>
+        <div data-chat-running="">
+          <span aria-hidden="true">status</span>
+          <span><span>考え中…</span></span>
+        </div>
       </div>
       <TpsMount sessionId="one" useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />
     </div>)
     const flow = view.container.querySelector('[data-chat-flow]')!
-    const row = flow.querySelector(':scope > [role="status"]')!
-    expect(row.querySelector('[data-tps-badge]')).not.toBeNull()
-    expect(flow.querySelector('article [data-tps-mount]')).toBeNull()
+    const row = flow.querySelector('[data-chat-running]')!
+    const content = row.lastElementChild!
+    expect(content.querySelector('[data-tps-badge]')).not.toBeNull()
     await act(async () => {
-      row.firstChild!.textContent = 'جارٍ التفكير…'
+      content.firstChild!.textContent = 'جارٍ التفكير…'
       const clock = document.createElement('span')
       clock.textContent = '15s'
-      row.appendChild(clock)
+      content.appendChild(clock)
     })
-    expect(row.lastChild).toBe(row.querySelector('[data-tps-mount]'))
+    expect(content.lastChild).toBe(content.querySelector('[data-tps-mount]'))
     expect(row.parentElement).toBe(flow)
     const replacement = document.createElement('div')
-    replacement.setAttribute('role', 'status')
-    replacement.setAttribute('aria-live', 'polite')
-    replacement.textContent = 'Pensando…'
+    replacement.setAttribute('data-chat-running', '')
+    replacement.innerHTML = '<span aria-hidden="true">status</span><span><span>Pensando…</span></span>'
     await act(async () => { row.replaceWith(replacement) })
     expect(row.querySelector('[data-tps-mount]')).toBeNull()
     expect(replacement.querySelector('[data-tps-badge]')).not.toBeNull()
@@ -183,8 +186,12 @@ describe('ui-tps plugin registration', () => {
     const flow = document.createElement('div')
     flow.setAttribute('data-chat-flow', '')
     const row = document.createElement('div')
-    row.setAttribute('role', 'status')
-    row.setAttribute('aria-live', 'polite')
+    row.setAttribute('data-chat-running', '')
+    const status = document.createElement('span')
+    status.setAttribute('aria-hidden', 'true')
+    const content = document.createElement('span')
+    content.textContent = '深度求索中'
+    row.append(status, content)
     flow.appendChild(row)
     const dock = document.createElement('div')
     scope.append(flow, dock)
@@ -200,38 +207,32 @@ describe('ui-tps plugin registration', () => {
 })
 
 describe('TpsOverlay component', () => {
-  // Exact tokenization is async (merge table load); the badge's expectations
-  // below are official DeepSeek tokenizer counts, so wait for readiness.
-  beforeAll(async () => {
-    await sharedEstimator.ready
-  })
-
-  it('renders nothing until the first live value, then keeps the dash during mid-turn pauses', () => {
+  it('shows the fixed zero reading until a value lands and returns to it on pauses', () => {
     let snapshot = conversationSnapshot()
     const view = render(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    // First appearance waits for a value: no bare "TPS --" next to the row.
-    expect(view.container.firstChild).toBeNull()
+    // The badge is present from the start in the fixed zero shape.
+    expect(badgeLabel(view.container)).toBe('00.00')
 
-    // The first value arrives → the badge mounts with the value.
+    // The first value arrives → the reading replaces the zeros.
     snapshot = runningSnapshot()
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 3.00')
+    expect(badgeLabel(view.container)).toBe('03.00')
 
-    // A mid-turn pause shows the dash (and value recovery shows the number
-    // again without remounting).
+    // A mid-turn pause returns to the zero reading (and recovery does not
+    // remount the badge).
     snapshot = { ...snapshot, partial: null }
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS --')
+    expect(badgeLabel(view.container)).toBe('00.00')
     snapshot = runningSnapshot()
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 3.00')
+    expect(badgeLabel(view.container)).toBe('03.00')
   })
 
   it('samples the streaming partial into a live rate and refreshes on deltas', async () => {
     vi.useFakeTimers()
     let snapshot = runningSnapshot()
     const view = render(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 3.00')
+    expect(badgeLabel(view.container)).toBe('03.00')
 
     // A delta lands at t=2000: one more estimated token over a 2s span.
     snapshot = {
@@ -241,24 +242,24 @@ describe('TpsOverlay component', () => {
     await act(async () => { vi.advanceTimersByTime(2_000) })
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
     // 3 tokens at t≈0 + 1 token at t=2000 → 4 / 2s = 2.00.
-    expect(view.container.textContent).toContain('TPS 2.00')
+    expect(badgeLabel(view.container)).toBe('02.00')
   })
 
   it('resets the live base when the streaming step changes', async () => {
     vi.useFakeTimers()
     let snapshot = runningSnapshot()
     const view = render(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 3.00')
+    expect(badgeLabel(view.container)).toBe('03.00')
 
     // A new step restarts accumulation: the previous step's samples drop and
-    // the new step's observed content opens a fresh window. 100 × 'x' is 13
-    // DeepSeek tokens (12 × 'xxxxxxxx' + 'xxxx').
+    // the new step's observed content opens a fresh window. 100 × 'x' is 20
+    // estimated tokens (100 bytes / 5).
     snapshot = {
       ...snapshot,
       partial: { turn: 1, step: 1, blocks: [{ kind: 'text', text: 'x'.repeat(100) }] },
     }
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 13.0') // 13 tokens
+    expect(badgeLabel(view.container)).toBe('20.00') // 20 tokens
 
     // The next delta of the new step appends: 5 more x's → 1 token.
     snapshot = {
@@ -267,19 +268,19 @@ describe('TpsOverlay component', () => {
     }
     await act(async () => { vi.advanceTimersByTime(500) })
     view.rerender(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    // 13 tokens at t≈0 + 1 at t=500 → 14 over the 1s floor.
-    expect(view.container.textContent).toContain('TPS 14.0')
+    // 20 tokens at t≈0 + 1 at t=500 → 21 over the 1s floor.
+    expect(badgeLabel(view.container)).toBe('21.00')
   })
 
-  it('ages the live rate to a dash while the stream pauses', async () => {
+  it('ages the live rate to the zero reading while the stream pauses', async () => {
     vi.useFakeTimers()
     const snapshot = runningSnapshot()
     const view = render(<TpsOverlay useSession={useSessionOf(() => snapshot)} useChat={useChatOf(() => snapshot)} t={t} />)
-    expect(view.container.textContent).toContain('TPS 3.00')
+    expect(badgeLabel(view.container)).toBe('03.00')
 
     // No new deltas: the cadence tick ages the sample past LIVE_STALE_MS.
     await act(async () => { vi.advanceTimersByTime(2_000) })
-    expect(view.container.textContent).toContain('TPS --')
+    expect(badgeLabel(view.container)).toBe('00.00')
   })
 
   it('fades out after the hover dwell and stays hidden while the cursor stays on it', async () => {

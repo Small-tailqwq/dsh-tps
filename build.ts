@@ -1,15 +1,30 @@
 /**
- * Shared CSS Modules inlining plugin for the main and prepare tsdown
- * configs: compiles `*.module.css` with lightningcss and emits a virtual
- * module that injects a deduplicated `<style data-plugin-css>` tag and
- * exports the class map — the same artifact contract as the in-repo
- * dsh-client-* packages.
+ * Build-time helpers for the tsdown build config: the loader module ids plus
+ * the CSS Modules inlining plugin that compiles `*.module.css` with
+ * lightningcss and emits a virtual module injecting a deduplicated
+ * `<style data-plugin-css>` tag and exporting the class map — the same
+ * artifact contract as the in-repo dsh-client-* packages.
  * @module
  */
 import { readFile } from 'node:fs/promises'
 import { basename, dirname, relative, resolve as resolvePath, sep } from 'node:path'
 import { transform } from 'lightningcss'
 import type { TsdownPlugin } from 'tsdown'
+
+/** Loader module-table id handed to `window.__ModuleLoader__.load`. */
+export const CLIENT_ID = 'dsh-tps'
+
+/** Browser-safe externals resolved from the loader module table. */
+export const CLIENT_EXTERNALS = [
+  'react',
+  'react/jsx-runtime',
+  'react-dom',
+  'react-dom/client',
+  '@deepseek-ai/cordis',
+  '@deepseek-ai/dsh-client-store',
+  '@deepseek-ai/dsh-client-ui-slots',
+  '@deepseek-ai/dsh-client-ui-primitives',
+]
 
 const CSS_VIRTUAL_PREFIX = '\0dsh-css:'
 const CSS_VIRTUAL_SUFFIX = '.mjs'

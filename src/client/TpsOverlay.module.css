@@ -1,18 +1,21 @@
 /* TPS badge inside the running-turn status row: follows the row's layout
-   after the elapsed clock. Latin capitals and digits render at ~0.7em
-   visual height against full-square CJK glyphs, so the badge uses the 14px
-   strong face next to the 13px clock to read at a comparable visual size.
-   The row's shimmer text fills itself via background-clip: text with a
-   transparent color, so the badge resets its own fill. The fade transition
-   duration here is the FADE_MS constant in TpsOverlay.tsx — change both
-   together. */
+   after the elapsed clock. The badge inherits the row's type and line box so
+   the reading shares the status label's baseline; only its colour and tabular
+   digits are its own. The row's shimmer text fills itself via
+   background-clip: text with a transparent color, so the badge resets its own
+   fill. Fade and roll durations here are FADE_MS and ROLL_MS in TpsOverlay.tsx
+   — change both together. */
 
 .root {
+  /* Same line box as the status label beside the badge. */
+  --dsh-tps-row-height: calc(22px + var(--dsh-content-font-delta, 0px));
   display: inline-flex;
   align-items: center;
+  align-self: center;
   margin-left: 8px;
-  font: var(--dsw-font-s-strong-14);
+  font: inherit;
   font-weight: 500;
+  line-height: var(--dsh-tps-row-height);
   font-variant-numeric: tabular-nums;
   color: var(--dsw-alias-label-caption);
   -webkit-text-fill-color: var(--dsw-alias-label-caption);
@@ -35,10 +38,9 @@
   pointer-events: none;
 }
 
-/* First-appearance fade-in: the badge mounts only once the first live value
-   arrives, and this one-shot animation (no iteration) runs exactly on that
-   mount. Mid-turn pauses (dash) and value recovery never remount, so the
-   animation does not replay. */
+/* First-appearance fade-in: the badge mounts with the running row and this
+   one-shot animation (no iteration) runs exactly on that mount. Mid-turn
+   zero readings and value recovery never remount, so it does not replay. */
 .enter {
   animation: dsh-tps-enter 200ms ease-out;
 }
@@ -49,5 +51,94 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Odometer: one fixed column per character. Each strip keeps the status
+   label's line box, so a digit's baseline matches the label and only the
+   digits that change roll. */
+.odometer {
+  display: inline-flex;
+  align-items: center;
+}
+
+.column {
+  position: relative;
+  display: inline-block;
+  width: 1ch;
+  height: var(--dsh-tps-row-height);
+  overflow: hidden;
+  line-height: var(--dsh-tps-row-height);
+  text-align: center;
+}
+
+.roller {
+  position: absolute;
+  inset: 0;
+  display: block;
+  line-height: var(--dsh-tps-row-height);
+  text-align: center;
+}
+
+/* The outgoing digit leaves in the direction opposite the incoming one:
+   rising values roll upward and falling values roll downward. */
+.enterUp {
+  animation: dsh-tps-roll-in-up 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.enterDown {
+  animation: dsh-tps-roll-in-down 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.exitUp {
+  animation: dsh-tps-roll-out-up 320ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.exitDown {
+  animation: dsh-tps-roll-out-down 320ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes dsh-tps-roll-in-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes dsh-tps-roll-in-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes dsh-tps-roll-out-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes dsh-tps-roll-out-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enterUp,
+  .enterDown,
+  .exitUp,
+  .exitDown {
+    animation: none;
   }
 }
