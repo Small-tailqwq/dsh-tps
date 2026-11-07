@@ -146,12 +146,18 @@ export function pointInRect(point: Point, rect: Rect): boolean {
 /** Which way the reading rolls: rising values travel upward. */
 type RollDirection = 'up' | 'down'
 
+/** The reel faces, top to bottom. */
+const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
+/** Three consecutive 0-9 groups; a change wraps at most one group away. */
+const REEL_FACES = [...DIGITS, ...DIGITS, ...DIGITS]
+/** Index of the middle group's `0`, where a settled reel is seated. */
+const REEL_BASE = DIGITS.length
+
 /**
  * Roll direction for one digit change. Digits compare as numbers so an
- * increase travels upward and a decrease downward; anything else (the decimal
- * point, if it ever changes) rolls upward.
- * @param from - the previous glyph.
- * @param to - the next glyph.
+ * increase travels upward and a decrease downward.
+ * @param from - the previous digit.
+ * @param to - the next digit.
  * @returns the direction.
  */
 function rollDirection(from: string, to: string): RollDirection {
@@ -162,37 +168,55 @@ function rollDirection(from: string, to: string): RollDirection {
 }
 
 /**
- * One odometer column. The strip inside keeps the status label's line box, so
- * the digit's baseline matches the label; only a changed digit rolls.
+ * One odometer column: a continuous 0-9 reel seated in the middle group. A
+ * changed digit rolls to its face in the direction of the change, wrapping
+ * through the neighbouring group (9→0 upward, 0→9 downward), then re-seats
+ * on the same face in the middle group without the transition. Any non-digit
+ * character (the decimal point) renders statically.
  */
 function RollingChar({ char }: { char: string }): ReactElement {
-  const previous = useRef(char)
-  const [outgoing, setOutgoing] = useState<{ char: string; direction: RollDirection } | null>(null)
-  const [direction, setDirection] = useState<RollDirection>('up')
+  const digit = DIGITS.indexOf(char as typeof DIGITS[number])
+  const isDigit = digit >= 0
+  const previous = useRef(isDigit ? digit : 0)
+  const [position, setPosition] = useState(isDigit ? REEL_BASE + digit : 0)
+  const [rolling, setRolling] = useState(false)
 
   useEffect(() => {
-    if (previous.current === char) return
+    if (!isDigit) return
     const from = previous.current
-    const nextDirection = rollDirection(from, char)
-    previous.current = char
-    setDirection(nextDirection)
-    setOutgoing({ char: from, direction: nextDirection })
-    const timer = window.setTimeout(() => { setOutgoing(null) }, ROLL_MS)
+    if (from === digit) return
+    const direction = rollDirection(String(from), char)
+    previous.current = digit
+    const target = direction === 'up'
+      ? (digit < from ? REEL_BASE * 2 + digit : REEL_BASE + digit)
+      : (digit > from ? digit : REEL_BASE + digit)
+    setRolling(true)
+    setPosition(target)
+    const timer = window.setTimeout(() => {
+      // Re-seat on the same face without the transition; the jump is invisible.
+      setRolling(false)
+      setPosition(REEL_BASE + digit)
+    }, ROLL_MS)
     return () => { window.clearTimeout(timer) }
-  }, [char])
+  }, [char, digit, isDigit])
+
+  if (!isDigit) {
+    return (
+      <span className={css.column}>
+        <span className={css.glyph}>{char}</span>
+      </span>
+    )
+  }
 
   return (
     <span className={css.column}>
-      {outgoing !== null && (
-        <span
-          className={clsx(css.roller, outgoing.direction === 'up' ? css.exitUp : css.exitDown)}
-          aria-hidden="true"
-        >
-          {outgoing.char}
-        </span>
-      )}
-      <span className={clsx(css.roller, direction === 'up' ? css.enterUp : css.enterDown)}>
-        {char}
+      <span
+        className={clsx(css.reel, rolling && css.reelRolling)}
+        style={{ transform: `translateY(calc(var(--dsh-tps-row-height) * ${-position}))` }}
+      >
+        {REEL_FACES.map((face, index) => (
+          <span key={index} className={css.glyph}>{face}</span>
+        ))}
       </span>
     </span>
   )

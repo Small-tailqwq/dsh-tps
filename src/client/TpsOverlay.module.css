@@ -54,9 +54,11 @@
   }
 }
 
-/* Odometer: one fixed column per character. Each strip keeps the status
-   label's line box, so a digit's baseline matches the label and only the
-   digits that change roll. */
+/* Odometer: one 0-9 reel per digit, seated in the status label's line box so
+   every face shares the label's baseline. The reel rolls to the target face
+   in the direction of the change and re-seats there when the roll ends; the
+   decimal point renders as a static column. Roll duration here is ROLL_MS in
+   TpsOverlay.tsx. */
 .odometer {
   display: inline-flex;
   align-items: center;
@@ -72,73 +74,24 @@
   text-align: center;
 }
 
-.roller {
-  position: absolute;
-  inset: 0;
+.reel {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.reelRolling {
+  transition: transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.glyph {
   display: block;
+  height: var(--dsh-tps-row-height);
   line-height: var(--dsh-tps-row-height);
-  text-align: center;
-}
-
-/* The outgoing digit leaves in the direction opposite the incoming one:
-   rising values roll upward and falling values roll downward. */
-.enterUp {
-  animation: dsh-tps-roll-in-up 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.enterDown {
-  animation: dsh-tps-roll-in-down 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.exitUp {
-  animation: dsh-tps-roll-out-up 320ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-.exitDown {
-  animation: dsh-tps-roll-out-down 320ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-@keyframes dsh-tps-roll-in-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes dsh-tps-roll-in-down {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes dsh-tps-roll-out-up {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100%);
-  }
-}
-
-@keyframes dsh-tps-roll-out-down {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enterUp,
-  .enterDown,
-  .exitUp,
-  .exitDown {
-    animation: none;
+  .reelRolling {
+    transition: none;
   }
 }
