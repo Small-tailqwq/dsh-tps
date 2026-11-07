@@ -2,7 +2,7 @@
 
 在 DSH Web 运行状态行末尾显示实时 TPS（每秒生成 token 数）。
 
-English: [README.en.md](README.en.md)
+[简体中文](README.md) | [English](README.en.md)
 
 ![演示](assets/dshtpsdemo.gif)
 
